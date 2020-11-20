@@ -109,31 +109,38 @@ bool InRanged(std::string start, std::string end, std::string date)
 
 }
 
-int main()
+std::vector<std::string> splitter(std::string input, std::string delimiter)
 {
-    // std::string start, end, date ;
-    // printf("start\n");
-    // //std::vector<std::vector<std::string>> amin;
-    // //amin = ReadCSV("PersianShop.csv");
-    // std::cout << "print start, end, date" << std::endl;
-    // std::cin >> start >> end >> date;
+    std::vector<std::string> message;
+    size_t pos = 0;
+    std::string token;
 
-    // if (InRanged(start, end, date))
-    // {
-    //     std::cout << "In Ranged !" << std::endl;
-    // }
-    // else
-    // {
-    //     std::cout << "NOT In Ranged !" << std::endl;
-    // }
-    
-    
-    // printf("called func\n");
-    // for (std::size_t i = 0; i < amin.size(); i++){
-    //     for (std::size_t j = 0; j < amin[i].size(); j++){
-    //         std::cout << amin[i][j] << " ";
-    //     }
-    //     std::cout << std::endl << std::endl;
-    // }
-    return 0;
+    while ((pos = input.find(delimiter)) != std::string::npos)
+    {
+        token = input.substr(0, pos);
+        std::cout << token << std::endl;
+        message.push_back(token);
+        input.erase(0, pos + delimiter.length());
+    }
+    message.push_back(input);
+
+    return message;
 }
+
+// int main()
+// {
+//     std::vector<std::string> amin;
+//     std::string in;
+//     std::cin >> in;
+
+//     amin =  splitter(in, "@");
+
+//     printf("called func\n");
+
+//     for (std::size_t i = 0; i < amin.size(); i++){
+//             std::cout << amin[i] << " ";
+//     }
+//     std::cout << std::endl;
+    
+//     return 0;
+// }
