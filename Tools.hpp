@@ -16,5 +16,6 @@ std::vector<std::string> splitter(std::string input, std::string delimiter);
 
 std::vector<std::string> getDirFiles(std::string dirPath);
 
+std::string findMinMax(std::vector<int> vec, std::string ordering);
 
 #endif

@@ -1,4 +1,5 @@
 #include "Tools.hpp"
+#include "my_defines.hpp"
 
 std::vector<std::vector<std::string>> ReadCSV(std::string file_path)
 {
@@ -159,21 +160,22 @@ std::vector<std::string> getDirFiles(std::string dirPath)
     return dirFiles;
 }
 
+std::string findMinMax(std::vector<int> vec, std::string ordering)
+{
+    std::string dataSent;
+    if (vec.size() == 0)
+        dataSent = "-1";
+    else
+    {
+        if (ordering == MAX)
+        {
+            dataSent = std::to_string(*max_element(vec.begin(), vec.end()));
+        }
+        else if (ordering == MIN)
+        {
+            dataSent = std::to_string(*min_element(vec.begin(), vec.end()));
+        }
+    }
 
-// int main()
-// {
-//     std::vector<std::string> amin;
-//     std::string in;
-//     std::cin >> in;
-
-//     amin =  splitter(in, "@");
-
-//     printf("called func\n");
-
-//     for (std::size_t i = 0; i < amin.size(); i++){
-//             std::cout << amin[i] << " ";
-//     }
-//     std::cout << std::endl;
-    
-//     return 0;
-// }
+    return dataSent;
+}
