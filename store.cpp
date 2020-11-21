@@ -53,21 +53,38 @@ int main(int argc, char const *argv[])
 
     for(int i = 1 ; i<arguments.size() ; i++)
     {
+        for(int j = 0 ; j<arguments[i].size() ; j++)
+            std::cout << "in CHILD, in csv , arg" << i << "is : " << arguments[i][j] << " ";
+
+        std::cout << std::endl;
         if ( InRanged(start, end, arguments[i][0]) && id == arguments[i][1] )
             res_price.push_back(arguments[i][2]);
     }
 
 
     sort(res_price.begin(), res_price.end());
+
+    // for (int i = 0; i < res_price.size(); i++)
+    // {
+    //     std::cout << "in CHILD, res1 : " << res_price[i] << std::endl;
+    // }
+
     if (res_price.size() == 0)
         dataSent = "-1";
     else
     {
         if (order == MAX)
-            dataSent = res_price[0];
+        {
+            //dataSent = res_price[0];
+            dataSent = std::string(*max_element(res_price.begin(), res_price.end()));
+        } 
         else if (order == MIN)
-            dataSent = res_price[res_price.size() - 1];
+        {
+            //dataSent = res_price[res_price.size() - 1];
+            dataSent = std::string(*min_element(res_price.begin(), res_price.end()));
+        }
     }
+    std::cout << "in CHILD, dataSent is : " << dataSent << std::endl;
     /* ----------- */
 
     /* send the filtered data to parent */
@@ -77,4 +94,5 @@ int main(int argc, char const *argv[])
     close(fifo);
 
     /* -------------------------------- */
+    printf("CHILD finished !!!!!\n");
 }
