@@ -127,6 +127,39 @@ std::vector<std::string> splitter(std::string input, std::string delimiter)
     return message;
 }
 
+std::vector<std::string> getDirFiles(std::string dirPath)
+{
+    //std::string dirPath;
+    std::vector<std::string> dirFiles;
+
+    DIR *dir;
+    struct dirent *ent;
+
+    //dirPath = "./";
+
+    if ((dir = opendir(dirPath.c_str())) != NULL)
+    {
+        while ((ent = readdir(dir)) != NULL)
+        {
+            if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
+            {
+                dirFiles.push_back(ent->d_name);
+            }
+        }
+        closedir(dir);
+    }
+    else
+    { /* could not open directory */
+        perror("open directory failed!");
+        exit(1);
+    }
+
+    sort(dirFiles.begin(), dirFiles.end());
+
+    return dirFiles;
+}
+
+
 // int main()
 // {
 //     std::vector<std::string> amin;
