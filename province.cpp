@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 #include "my_defines.hpp"
 #include "Tools.hpp"
@@ -16,6 +17,7 @@ int main(int argc, char const *argv[])
     std::string fifoPath;
     std::string input;
     std::string final_res;
+    std::string city_final_res;
     std::string start, end, id, order;
 
     std::vector<std::string> results;
@@ -28,6 +30,7 @@ int main(int argc, char const *argv[])
     int fifo;
     int readBit;
     char buff[MSGSIZE];
+    char cityBuff[MSGSIZE];
     
 
     ProvinceFilePath = std::string(argv[1]);// path of province directory that should searching for own cities
@@ -55,9 +58,9 @@ int main(int argc, char const *argv[])
     input = std::string(buff);
     
     inputs = splitter(input, DELIMITER);
-    start = inputs[0];
-    end = inputs[1];
-    id = inputs[2];
+    //start = inputs[0];
+    //end = inputs[1];
+    //id = inputs[2];
     order = inputs[3];
 
     /* ---------------------------------------------------------------------- */
@@ -113,25 +116,56 @@ int main(int argc, char const *argv[])
             argv[0] = "city";
             argv[1] = execPath.c_str();
             argv[2] = std::to_string(cityPipes[i][0]).c_str();
-            argv[4] = citynamedpipes[i].c_str();
-            argv[5] = NULL;
+            argv[3] = citynamedpipes[i].c_str();
+            argv[4] = NULL;
 
             execv(argv[0], (char **)argv);
         }
         else
         {
             close(cityPipes[i][0]);
-            citypids.push_back(pid);
+            if (write(cityPipes[i][1], input.c_str(), (input.length()) + 1) < 0)
+            {
+                std::cerr << "error in sending filters to cities via pipe" << std::endl;
+                return 2;
+            }
+            if (close(cityPipes[i][1]) < 0)
+            {
+                std::cerr << "error in closing city pipe" << std::endl;
+                return 2;
+            }
+            //citypids.push_back(pid);
         }
     }
     /*-------------- */
-
     /***************************************************************/
 
     /* getting data from cities */
 
-    /****************************/
+    for (int i = 0; i < cityCount; i++)
+    {
+        int fifo_fd;
+        fifo_fd = open(citynamedpipes[i].c_str(), O_RDONLY); // open namedpipe to receive filtered data from cities
 
+        if (read(fifo_fd, cityBuff, MSGSIZE) < 0)
+        {
+            std::cerr << "error in receiving final res from cities via FIFO" << std::endl;
+            return 2;
+        }
+        if (close(fifo_fd) < 0)
+        {
+            std::cerr << "error in closing namedpipe [FIFO]" << std::endl;
+            return 2;
+        }
+
+        city_final_res = std::string(cityBuff);
+        if (city_final_res != "-1")
+            integerResults.push_back(stoi(city_final_res));
+    }
+
+    while (wait(NULL) > 0 || errno != ECHILD);
+
+    /****************************/
     /* ---------------------------------------------------------------------- */
 
 
