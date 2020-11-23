@@ -60,9 +60,6 @@ int main(int argc, char const *argv[])
 
     for (int i = 1; i < arguments.size(); i++)
     {
-        for (int j = 0; j < arguments[i].size(); j++)
-            std::cout << "in CHILD, in csv , arg" << i << "is : " << arguments[i][j] << std::endl;
-
         if (InRanged(start, end, arguments[i][0]) && id == arguments[i][1])
             res_price.push_back(arguments[i][2]);
     }
@@ -80,7 +77,7 @@ int main(int argc, char const *argv[])
             dataSent = std::string(*min_element(res_price.begin(), res_price.end()));
         }
     }
-    std::cout << "in CHILD, dataSent is : " << dataSent << std::endl;
+    //std::cout << "in CHILD, store " << csvPath << " dataSent is : " << dataSent << std::endl;
     /* ----------- */
 
     /* send the filtered data to parent */
@@ -98,5 +95,5 @@ int main(int argc, char const *argv[])
     }
 
     /* -------------------------------- */
-    printf("CHILD finished !!!!!\n");
+    //printf("CHILD finished !!!!!\n");
 }
