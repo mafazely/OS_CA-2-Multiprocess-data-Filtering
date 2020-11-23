@@ -14,59 +14,59 @@ int main(int argc, char const *argv[])
 {
     std::string CityFilePath;
 
-    std::string fifoPath;
-    std::string input;
-    std::string final_res;
+    std::string CityfifoPath;
+    std::string Cityinput;
+    std::string Cityfinal_res;
     std::string store_final_res;
-    std::string start, end, id, order;
+    std::string Cityordering;
 
-    std::vector<std::string> results;
-    std::vector<int> integerResults;
-    std::vector<std::string> inputs;
+    std::vector<std::string> Cityresults;
+    std::vector<int> CityintegerResults;
+    std::vector<std::string> Cityinputs;
     std::vector<std::string> stores;
     size_t StoreCount;
 
-    int fd;
-    int fifo;
-    int readBit;
-    char buff[MSGSIZE];
+    int Cityfd;
+    int Cityfifo;
+    int CityreadBit;
+    char Citybuff[MSGSIZE];
     char storeBuff[MSGSIZE];
 
     CityFilePath = std::string(argv[1]);     // path of city directory that should searching for own stores
-    fd = std::stoi(argv[2]);                 //file descriptor ro reading from unnamed pipe
-    fifoPath = std::string(argv[3]);         // path of named pipe for sending filtered result
+    Cityfd = atoi(argv[2]);                  // file descriptor ro reading from unnamed pipe
+    CityfifoPath = std::string(argv[3]);     // path of named pipe for sending filtered result
 
     stores = getDirFiles(CityFilePath);      // get list of csv files in this dir
     StoreCount = stores.size();
 
-    readBit = read(fd, buff, MSGSIZE);       // read data from pipe
-    if (readBit < 0)
+    CityreadBit = read(Cityfd, Citybuff, MSGSIZE); // read data from pipe
+    if (CityreadBit < 0)
     {
         std::cerr << "error in reading from pipe" << std::endl;
         return 2;
     }
-    else if (readBit == 0)
+    else if (CityreadBit == 0)
     {
         std::cerr << "error in reading from pipe [ can't read all data ]" << std::endl;
     }
-    if (close(fd) < 0)
+    if (close(Cityfd) < 0)
     {
         std::cerr << "error in closing pipe read fd" << std::endl;
         return 2;
     }
-    input = std::string(buff);
 
-    inputs = splitter(input, DELIMITER);
-    order = inputs[3];
+    Cityinput = std::string(Citybuff);
+    Cityinputs = splitter(Cityinput, DELIMITER);
+    Cityordering = Cityinputs[3];
+
 
     /* ---------------------------------------------------------------------- */
 
     /* -------------- handling fork and city childs --------------- */
 
     std::vector<std::vector<int>> storePipes;
-    //std::vector<pid_t> citypids;
     std::vector<std::string> storenamedpipes;
-    std::string execPath;
+    std::string StoreExecPath;
     std::string storefifo;
 
     /* create unnamed pipes */
@@ -88,7 +88,7 @@ int main(int argc, char const *argv[])
     /* create fifos */
     for (int i = 0; i < StoreCount; i++)
     {
-        storefifo = std::string(CITYNAMEDPIPE) + std::to_string(i);
+        storefifo = std::string(CITYNAMEDPIPE) + stores[i] + std::to_string(i);
         mkfifo(storefifo.c_str(), 0666);
         storenamedpipes.push_back(storefifo);
     }
@@ -97,7 +97,7 @@ int main(int argc, char const *argv[])
     /*--- forking --- */
     for (int i = 0; i < StoreCount; i++)
     {
-        execPath = CityFilePath + '/' + stores[i];
+        StoreExecPath = CityFilePath + '/' + stores[i];
         pid_t pid = fork();
         if (pid < 0)
         {
@@ -108,7 +108,7 @@ int main(int argc, char const *argv[])
             close(storePipes[i][1]);
             const char *argv[5];
             argv[0] = "store";
-            argv[1] = execPath.c_str();
+            argv[1] = StoreExecPath.c_str();
             argv[2] = std::to_string(storePipes[i][0]).c_str();
             argv[3] = storenamedpipes[i].c_str();
             argv[4] = NULL;
@@ -118,7 +118,7 @@ int main(int argc, char const *argv[])
         else
         {
             close(storePipes[i][0]);
-            if (write(storePipes[i][1], input.c_str(), (input.length()) + 1) < 0)
+            if (write(storePipes[i][1], Cityinput.c_str(), (Cityinput.length()) + 1) < 0)
             {
                 std::cerr << "error in sending filters to stores via pipe" << std::endl;
                 return 2;
@@ -128,14 +128,12 @@ int main(int argc, char const *argv[])
                 std::cerr << "error in closing store pipe" << std::endl;
                 return 2;
             }
-            //citypids.push_back(pid);
         }
     }
     /*-------------- */
     /***************************************************************/
 
     /* getting data from cities */
-
     for (int i = 0; i < StoreCount; i++)
     {
         int fifo_fd;
@@ -153,8 +151,8 @@ int main(int argc, char const *argv[])
         }
 
         store_final_res = std::string(storeBuff);
-        if (store_final_res != "-1")
-            integerResults.push_back(stoi(store_final_res));
+        if (store_final_res != "-1" && store_final_res.length() > 0)
+            CityintegerResults.push_back(stoi(store_final_res));
     }
 
     while (wait(NULL) > 0 || errno != ECHILD);
@@ -164,15 +162,15 @@ int main(int argc, char const *argv[])
 
     /* calculatios and send final result to parent */
 
-    final_res = findMinMax(integerResults, order);
+    Cityfinal_res = findMinMax(CityintegerResults, Cityordering);
 
-    fifo = open(fifoPath.c_str(), O_WRONLY);            // open namedpipe to send data
-    if (write(fifo, final_res.c_str(), (final_res.length()) + 1) < 0)
+    Cityfifo = open(CityfifoPath.c_str(), O_WRONLY);        // open namedpipe to send data
+    if (write(Cityfifo, Cityfinal_res.c_str(), (Cityfinal_res.length()) + 1) < 0)
     {
         std::cerr << "error in sending final city result via FIFO" << std::endl;
         return 2;
     }
-    if (close(fifo) < 0)
+    if (close(Cityfifo) < 0)
     {
         std::cerr << "error in closing namedpipe [FIFO]" << std::endl;
         return 2;
