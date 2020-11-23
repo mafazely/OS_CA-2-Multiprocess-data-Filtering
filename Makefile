@@ -7,7 +7,7 @@ target:
 	g++ -c store.cpp
 	g++ -c Tools.cpp
 	g++ -o StoreCalculator.out‬‬ my_main.o my_loadBalancer.o Tools.o
-	g++ -c distributor Maindistributor.o Tools.o
+	g++ -o distributor Maindistributor.o Tools.o
 	g++ -o province province.o Tools.o
 	g++ -o city city.o Tools.o
 	g++ -o store store.o Tools.o
