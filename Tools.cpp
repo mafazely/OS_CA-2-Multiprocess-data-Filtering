@@ -119,7 +119,6 @@ std::vector<std::string> splitter(std::string input, std::string delimiter)
     while ((pos = input.find(delimiter)) != std::string::npos)
     {
         token = input.substr(0, pos);
-        std::cout << token << std::endl;
         message.push_back(token);
         input.erase(0, pos + delimiter.length());
     }
