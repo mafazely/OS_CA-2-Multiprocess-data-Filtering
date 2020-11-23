@@ -10,100 +10,94 @@
 #include "my_defines.hpp"
 #include "Tools.hpp"
 
+
 int main(int argc, char const *argv[])
 {
     std::string ProvinceFilePath;
-
-    std::string fifoPath;
-    std::string input;
-    std::string final_res;
+    std::string ProvincefifoPath;
+    std::string Provinceinput;
+    std::string Provincefinal_res;
     std::string city_final_res;
-    std::string start, end, id, order;
+    std::string ProvinceOrdering;
 
-    std::vector<std::string> results;
-    std::vector<int> integerResults;
-    std::vector<std::string> inputs;
+    std::vector<std::string> Provinceresults;
+    std::vector<int> ProvinceintegerResults;
+    std::vector<std::string> Provinceinputs;
     std::vector<std::string> cities;
     size_t cityCount;
 
-    int fd;
-    int fifo;
-    int readBit;
-    char buff[MSGSIZE];
+    int Provincefd;
+    int Provincefifo;
+    int ProvincereadBit;
+    char Provincebuff[MSGSIZE];
     char cityBuff[MSGSIZE];
-    
 
-    ProvinceFilePath = std::string(argv[1]);// path of province directory that should searching for own cities
-    fd = std::stoi(argv[2]);                //file descriptor ro reading from unnamed pipe
-    fifoPath = std::string(argv[3]);        // path of named pipe for sending filtered result
+    ProvinceFilePath = std::string(argv[1]);    // path of province directory that should searching for own cities
+    Provincefd = atoi(argv[2]);                 // file descriptor ro reading from unnamed pipe
+    ProvincefifoPath = std::string(argv[3]);    // path of named pipe for sending filtered result
 
     cities = getDirFiles(ProvinceFilePath); // get list of directories in this dir
     cityCount = cities.size();
 
-    readBit = read(fd, buff, MSGSIZE);      // read data from pipe
-    if (readBit < 0)
+    ProvincereadBit = read(Provincefd, Provincebuff, MSGSIZE); // read data from pipe
+    if (ProvincereadBit < 0)
     {
         std::cerr << "error in reading from pipe" << std::endl;
         return 2;
     }
-    else if (readBit == 0)
+    else if (ProvincereadBit == 0)
     {
         std::cerr << "error in reading from pipe [ can't read all data ]" << std::endl;
     }
-    if (close(fd) < 0)
+    if (close(Provincefd) < 0)
     {
         std::cerr << "error in closing pipe read fd" << std::endl;
         return 2;
     }
-    input = std::string(buff);
-    
-    inputs = splitter(input, DELIMITER);
-    //start = inputs[0];
-    //end = inputs[1];
-    //id = inputs[2];
-    order = inputs[3];
+    Provinceinput = std::string(Provincebuff);
+
+    Provinceinputs = splitter(Provinceinput, DELIMITER);
+    ProvinceOrdering = Provinceinputs[3];
 
     /* ---------------------------------------------------------------------- */
+
 
     /* -------------- handling fork and city childs --------------- */
 
     std::vector<std::vector<int>> cityPipes;
-    std::vector<pid_t> citypids;
     std::vector<std::string> citynamedpipes;
-    std::string execPath;
+    std::string ProvinceExecPath;
     std::string cityfifo;
 
     /* create unnamed pipes */
     for (int i = 0; i < cityCount; i++)
     {
-        int cityfd[2];
-        if (pipe(cityfd) < 0)
+        int Provincefd[2];
+        if (pipe(Provincefd) < 0)
         {
             std::cerr << "can not create city pipe " << i << std::endl;
             return 2;
         }
         std::vector<int> fds;
-        fds.push_back(cityfd[0]);
-        fds.push_back(cityfd[1]);
+        fds.push_back(Provincefd[0]);
+        fds.push_back(Provincefd[1]);
         cityPipes.push_back(fds);
     }
     /* -------------------- */
 
-
     /* create fifos */
     for (int i = 0; i < cityCount; i++)
     {
-        cityfifo = std::string(PROVINCENAMEDPIPE) + std::to_string(i);
+        cityfifo = std::string(PROVINCENAMEDPIPE) + cities[i] + std::to_string(i);
         mkfifo(cityfifo.c_str(), 0666);
         citynamedpipes.push_back(cityfifo);
     }
     /* ------------ */
 
-    
     /*--- forking --- */
     for (int i = 0; i < cityCount; i++)
     {
-        execPath = ProvinceFilePath + '/' + cities[i];
+        ProvinceExecPath = ProvinceFilePath + '/' + cities[i];
         pid_t pid = fork();
         if (pid < 0)
         {
@@ -114,7 +108,7 @@ int main(int argc, char const *argv[])
             close(cityPipes[i][1]);
             const char *argv[5];
             argv[0] = "city";
-            argv[1] = execPath.c_str();
+            argv[1] = ProvinceExecPath.c_str();
             argv[2] = std::to_string(cityPipes[i][0]).c_str();
             argv[3] = citynamedpipes[i].c_str();
             argv[4] = NULL;
@@ -124,7 +118,7 @@ int main(int argc, char const *argv[])
         else
         {
             close(cityPipes[i][0]);
-            if (write(cityPipes[i][1], input.c_str(), (input.length()) + 1) < 0)
+            if (write(cityPipes[i][1], Provinceinput.c_str(), (Provinceinput.length()) + 1) < 0)
             {
                 std::cerr << "error in sending filters to cities via pipe" << std::endl;
                 return 2;
@@ -134,7 +128,6 @@ int main(int argc, char const *argv[])
                 std::cerr << "error in closing city pipe" << std::endl;
                 return 2;
             }
-            //citypids.push_back(pid);
         }
     }
     /*-------------- */
@@ -144,23 +137,23 @@ int main(int argc, char const *argv[])
 
     for (int i = 0; i < cityCount; i++)
     {
-        int fifo_fd;
-        fifo_fd = open(citynamedpipes[i].c_str(), O_RDONLY); // open namedpipe to receive filtered data from cities
+        int Provincefifo_fd;
+        Provincefifo_fd = open(citynamedpipes[i].c_str(), O_RDONLY); // open namedpipe to receive filtered data from cities
 
-        if (read(fifo_fd, cityBuff, MSGSIZE) < 0)
+        if (read(Provincefifo_fd, cityBuff, MSGSIZE) < 0)
         {
             std::cerr << "error in receiving final res from cities via FIFO" << std::endl;
             return 2;
         }
-        if (close(fifo_fd) < 0)
+        if (close(Provincefifo_fd) < 0)
         {
             std::cerr << "error in closing namedpipe [FIFO]" << std::endl;
             return 2;
         }
 
         city_final_res = std::string(cityBuff);
-        if (city_final_res != "-1")
-            integerResults.push_back(stoi(city_final_res));
+        if (city_final_res != "-1" && city_final_res.length() > 0)
+            ProvinceintegerResults.push_back(stoi(city_final_res));
     }
 
     while (wait(NULL) > 0 || errno != ECHILD);
@@ -171,19 +164,20 @@ int main(int argc, char const *argv[])
 
     /* calculatios and send final result to parent */
 
-    final_res = findMinMax(integerResults, order);
+    Provincefinal_res = findMinMax(ProvinceintegerResults, ProvinceOrdering);
 
-    fifo = open(fifoPath.c_str(), O_WRONLY);        // open namedpipe to send data
-    if ( write(fifo, final_res.c_str(), (final_res.length()) + 1) < 0 )
+    Provincefifo = open(ProvincefifoPath.c_str(), O_WRONLY); // open namedpipe to send data
+    if (write(Provincefifo, Provincefinal_res.c_str(), (Provincefinal_res.length()) + 1) < 0)
     {
         std::cerr << "error in sending final province result via FIFO" << std::endl;
         return 2;
     }
-    if (close(fifo) < 0)
+    if (close(Provincefifo) < 0)
     {
         std::cerr << "error in closing namedpipe [FIFO]" << std::endl;
         return 2;
     }
+    //std::cout << "Province process finished ! " << std::endl;
 
     /* ------------------------------------------- */
 }
