@@ -15,3 +15,17 @@ my_city.cpp
 my_store.cpp
 main
 distributor
+‫‪OS-CA2-810197549‬‬.zip
+.gitignore
+city_test.cpp
+citytest
+provincetest
+city.o
+Maindistributor.o
+Tools.o
+StoreCalculator.out‬‬
+store.o
+province.o
+province_test.cpp
+my_main.o
+my_loadBalancer.o
