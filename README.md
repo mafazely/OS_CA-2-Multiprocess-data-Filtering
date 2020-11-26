@@ -13,7 +13,7 @@ like this :
 /StoreCalculator.out‬‬ ‬ commands.txt assets
 ```
 
-### command fromat (2 types):
+### command format (2 types):
 ```
 ‫‪MAX‬‬ <product_id> <starting_date> <ending_date>
 ```
